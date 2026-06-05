@@ -1,94 +1,46 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Montage Render Segments</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Studio Vidéo IA</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #070b14;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 22px;
-    }
-    .card {
-      width: 100%;
-      max-width: 620px;
-      background: #111827;
-      border: 1px solid #334155;
-      border-radius: 22px;
-      padding: 24px;
-      box-shadow: 0 20px 80px rgba(0,0,0,.45);
-    }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 30px;
-      line-height: 1.1;
-    }
-    .bad {
-      display: inline-block;
-      background: #7f1d1d;
-      color: #fecaca;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 700;
-      margin-bottom: 18px;
-    }
-    .good {
-      display: inline-block;
-      background: #064e3b;
-      color: #a7f3d0;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 700;
-      margin-top: 12px;
-    }
-    p, li { font-size: 17px; line-height: 1.55; color: #dbeafe; }
-    code {
-      background: #020617;
-      color: #bae6fd;
-      padding: 3px 7px;
-      border-radius: 8px;
-    }
-    .steps {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 18px;
-    }
+    body{margin:0;font-family:Arial,sans-serif;background:#070b14;color:#fff;padding:14px}.app{max-width:720px;margin:auto}.box{background:#111827;border:1px solid #334155;border-radius:20px;padding:18px;margin:14px 0}h1{font-size:30px;margin:0 0 10px}p{color:#cbd5e1;line-height:1.45}input,button{width:100%;padding:14px;margin-top:10px;border-radius:12px;border:0;font-size:16px}input{background:#020617;color:#fff;border:1px solid #334155}button{background:#2563eb;color:white;font-weight:800}.badge{display:inline-block;background:#022c22;color:#bbf7d0;border:1px solid #166534;border-radius:999px;padding:8px 10px;margin:4px 4px 4px 0;font-weight:700}.log{white-space:pre-wrap;background:#020617;border:1px solid #334155;border-radius:14px;padding:14px;color:#dbeafe}.warn{background:#451a03;color:#fed7aa;border:1px solid #92400e;border-radius:14px;padding:12px}
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="bad">Ce lien GitHub Pages n'est pas l'application</div>
-    <h1>Montage Render Segments</h1>
-    <p>
-      GitHub Pages ne peut pas lancer Node.js, Express ou FFmpeg. Il affiche seulement une page statique.
-    </p>
-    <p>
-      La vraie application doit être ouverte depuis Render, avec une adresse du type :
-    </p>
-    <p><code>https://montage-render-segments.onrender.com</code></p>
-
-    <div class="steps">
-      <p><strong>À faire dans Render :</strong></p>
-      <ol>
-        <li>New Web Service</li>
-        <li>Connecter le dépôt <code>Chasmet/montage-render-segments</code></li>
-        <li>Build Command : <code>npm install</code></li>
-        <li>Start Command : <code>npm start</code></li>
-        <li>Deploy Web Service</li>
-      </ol>
-    </div>
-
-    <div class="good">Après déploiement Render, tu verras l'upload vidéo et le traitement MP4.</div>
+  <main class="app">
+    <section class="box">
+      <h1>Studio Vidéo IA</h1>
+      <p>Application mobile prête pour envoyer une vidéo au moteur Render.</p>
+      <span class="badge">Max 3 min</span>
+      <span class="badge">Segments 10 s</span>
+      <span class="badge">18 segments max</span>
+      <span class="badge">Export MP4</span>
+    </section>
+    <section class="box">
+      <p class="warn">Colle ici l'URL Render dès que le service sera créé.</p>
+      <input id="backend" placeholder="https://ton-service.onrender.com">
+      <button onclick="saveBackend()">Sauvegarder l'URL Render</button>
+      <button onclick="testBackend()">Tester le serveur</button>
+    </section>
+    <section class="box">
+      <input id="video" type="file" accept="video/*">
+      <button onclick="sendVideo()">Envoyer la vidéo et créer le MP4</button>
+    </section>
+    <section class="box">
+      <div id="log" class="log">Interface GitHub prête. Le vrai traitement se fera par Render.</div>
+    </section>
   </main>
+  <script>
+    const backend=document.getElementById('backend');
+    const log=document.getElementById('log');
+    backend.value=localStorage.getItem('backendUrl')||'';
+    function clean(v){return String(v||'').trim().replace(/\/$/,'')}
+    function write(t){log.textContent=t}
+    function saveBackend(){localStorage.setItem('backendUrl',clean(backend.value));write('URL sauvegardée : '+clean(backend.value))}
+    async function testBackend(){const url=clean(backend.value);if(!url)return write('Ajoute d’abord l’URL Render.');try{const r=await fetch(url+'/api/health');const j=await r.json();write('Serveur OK :\n'+JSON.stringify(j,null,2))}catch(e){write('Serveur non joignable : '+e.message)}}
+    async function sendVideo(){const url=clean(backend.value);const file=document.getElementById('video').files[0];if(!url)return write('Ajoute l’URL Render.');if(!file)return write('Choisis une vidéo.');const data=new FormData();data.append('video',file);write('Envoi et traitement en cours...');try{const r=await fetch(url+'/api/process-video',{method:'POST',body:data});const j=await r.json();if(!r.ok)throw new Error(j.error||'Erreur');const link=url+j.downloadUrl;write('MP4 prêt : '+link+'\n\n'+JSON.stringify(j,null,2))}catch(e){write('Erreur : '+e.message)}}
+  </script>
 </body>
 </html>
