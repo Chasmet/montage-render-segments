@@ -10,10 +10,9 @@
   <main class="app">
     <section class="box">
       <h1>Studio Vidéo IA</h1>
-      <p>Envoie une vidéo au moteur Render.</p>
-      <span class="badge">Max 3 min</span>
-      <span class="badge">Max 150 Mo</span>
-      <span class="badge">Segments 10 s</span>
+      <p>Envoie une vidéo au moteur Render et récupère directement le MP4 traité.</p>
+      <span class="badge">Mode léger Render</span>
+      <span class="badge">Max conseillé 30 Mo</span>
       <span class="badge">Export MP4</span>
     </section>
 
@@ -28,6 +27,14 @@
       <input id="video" type="file" accept="video/mp4,video/*" onchange="fileInfo()">
       <p id="info">Aucune vidéo choisie.</p>
       <button onclick="sendVideo()">Envoyer la vidéo et créer le MP4</button>
+    </section>
+
+    <section id="resultBox" class="box hidden">
+      <h2>MP4 prêt</h2>
+      <p id="resultInfo">Ta vidéo traitée est prête.</p>
+      <a id="downloadBtn" class="download-btn" href="#" download>Télécharger le MP4</a>
+      <a id="openBtn" class="secondary-btn" href="#" target="_blank" rel="noopener">Ouvrir la vidéo</a>
+      <video id="preview" class="preview" controls playsinline></video>
     </section>
 
     <section class="box">
