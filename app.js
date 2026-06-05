@@ -65,7 +65,8 @@ function showResult(link, json, baseUrl) {
   const inputSize = json && json.input ? json.input.sizeMb : '?';
   const outputSize = json && json.output ? json.output.sizeMb : '?';
   const lines = json && json.dubbing ? json.dubbing.lines : 0;
-  resultInfo.textContent = 'Vidéo prête. Original : ' + inputSize + ' Mo. MP4 final : ' + outputSize + ' Mo. Répliques doublées : ' + lines + '.';
+  const timed = json && json.dubbing && json.dubbing.timed ? ' Oui' : ' Non';
+  resultInfo.textContent = 'Vidéo prête. Original : ' + inputSize + ' Mo. MP4 final : ' + outputSize + ' Mo. Répliques : ' + lines + '. Timing calé :' + timed + '.';
   resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -90,7 +91,8 @@ function fileInfo() {
 function parseDialogueLine(line) {
   const text = String(line || '').trim();
   if (!text) return null;
-  const match = text.match(/^(.{1,40}?)\s*[:：∶﹕꞉;\-–—]\s*(.+)$/u);
+  const withoutTime = text.replace(/^\s*\[[^\]]+\]\s*/, '');
+  const match = withoutTime.match(/^(.{1,40}?)\s*[:：∶﹕꞉;\-–—]\s*(.+)$/u);
   if (!match) return null;
   const name = match[1].trim();
   const dialogue = match[2].trim();
@@ -141,7 +143,7 @@ function detectCharacters() {
   });
   localStorage.setItem('voiceMap', JSON.stringify(voiceMap));
   charactersBox.classList.remove('hidden');
-  write(names.length + ' personnage(s) détecté(s). Choisis une voix pour chacun.');
+  write(names.length + ' voix parlante(s) détectée(s). Corrige les voix si besoin.');
 }
 
 async function testBackend() {
@@ -153,6 +155,44 @@ async function testBackend() {
     write('Serveur OK :\n' + JSON.stringify(json, null, 2));
   } catch (error) {
     write('Serveur non joignable : ' + error.message);
+  }
+}
+
+async function analyzeVideo() {
+  hideResult();
+  const url = clean(backend.value);
+  const file = video.files[0];
+  if (!url) return write('Ajoute l’URL Render.');
+  if (!file) return write('Choisis une vidéo à analyser.');
+
+  const data = new FormData();
+  data.append('video', file);
+
+  write('Analyse automatique en cours. OpenAI écoute la vidéo et détecte les voix parlantes. Ne ferme pas la page.');
+
+  try {
+    const response = await fetch(url + '/api/analyze-video', { method: 'POST', body: data });
+    const text = await response.text();
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      throw new Error(text || 'Réponse serveur illisible.');
+    }
+    if (!response.ok) throw new Error(json.error || 'Erreur serveur ' + response.status);
+
+    if (scenario) {
+      scenario.value = json.script || '';
+      localStorage.setItem('scenarioText', scenario.value);
+    }
+    if (json.voiceMap) {
+      voiceMap = json.voiceMap;
+      localStorage.setItem('voiceMap', JSON.stringify(voiceMap));
+    }
+    detectCharacters();
+    write('Analyse terminée. Les personnages silencieux sont ignorés. Vérifie les voix proposées puis clique sur “Générer la vidéo doublée MP4”.\n\n' + JSON.stringify(json, null, 2));
+  } catch (error) {
+    write('Erreur analyse vidéo : ' + error.message);
   }
 }
 
@@ -176,7 +216,7 @@ async function sendVideo() {
   data.append('script', scenario ? scenario.value : '');
   data.append('voiceMap', JSON.stringify(voiceMap));
 
-  write('Traitement en cours. Ne ferme pas la page.');
+  write('Traitement en cours. Génération des voix puis création du MP4. Ne ferme pas la page.');
 
   try {
     const response = await fetch(url + '/api/process-video', {
