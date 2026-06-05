@@ -2,13 +2,32 @@ const backend = document.getElementById('backend');
 const log = document.getElementById('log');
 const info = document.getElementById('info');
 const video = document.getElementById('video');
+const scenario = document.getElementById('script');
+const charactersBox = document.getElementById('charactersBox');
+const characters = document.getElementById('characters');
 const resultBox = document.getElementById('resultBox');
 const resultInfo = document.getElementById('resultInfo');
 const downloadBtn = document.getElementById('downloadBtn');
 const openBtn = document.getElementById('openBtn');
+const audioBtn = document.getElementById('audioBtn');
 const preview = document.getElementById('preview');
 
+const VOICES = [
+  ['jeune-energie', 'Jeune énergique'],
+  ['jeune-doux', 'Jeune doux'],
+  ['feminin-doux', 'Féminin doux'],
+  ['feminin-mystere', 'Féminin mystérieux'],
+  ['homme-naturel', 'Homme naturel'],
+  ['homme-grave', 'Homme grave'],
+  ['mechant', 'Méchant'],
+  ['robot', 'Robot'],
+  ['monstre', 'Monstre'],
+  ['urbain-melodique', 'Voix urbaine mélodique']
+];
+
 backend.value = localStorage.getItem('backendUrl') || '';
+if (scenario) scenario.value = localStorage.getItem('scenarioText') || '';
+let voiceMap = JSON.parse(localStorage.getItem('voiceMap') || '{}');
 
 function clean(value) {
   return String(value || '').trim().replace(/\/$/, '');
@@ -22,21 +41,31 @@ function hideResult() {
   resultBox.classList.add('hidden');
   downloadBtn.href = '#';
   openBtn.href = '#';
+  if (audioBtn) {
+    audioBtn.href = '#';
+    audioBtn.classList.add('hidden');
+  }
   preview.removeAttribute('src');
   preview.load();
 }
 
-function showResult(link, json) {
+function showResult(link, json, baseUrl) {
   resultBox.classList.remove('hidden');
   downloadBtn.href = link;
-  downloadBtn.setAttribute('download', 'video-traitee.mp4');
+  downloadBtn.setAttribute('download', 'video-doublee.mp4');
   openBtn.href = link;
   preview.src = link;
 
-  const inputSize = json?.input?.sizeMb ?? '?';
-  const outputSize = json?.output?.sizeMb ?? '?';
-  resultInfo.textContent = `Vidéo prête. Taille originale : ${inputSize} Mo. MP4 final : ${outputSize} Mo.`;
+  if (audioBtn && json.dubbing && json.dubbing.audioDownloadUrl) {
+    audioBtn.classList.remove('hidden');
+    audioBtn.href = baseUrl + json.dubbing.audioDownloadUrl;
+    audioBtn.setAttribute('download', 'doublage.mp3');
+  }
 
+  const inputSize = json && json.input ? json.input.sizeMb : '?';
+  const outputSize = json && json.output ? json.output.sizeMb : '?';
+  const lines = json && json.dubbing ? json.dubbing.lines : 0;
+  resultInfo.textContent = 'Vidéo prête. Original : ' + inputSize + ' Mo. MP4 final : ' + outputSize + ' Mo. Répliques doublées : ' + lines + '.';
   resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -58,6 +87,55 @@ function fileInfo() {
   if (mb > 30) write('Attention : sur Render gratuit, le maximum conseillé est 30 Mo.');
 }
 
+function getNames() {
+  const names = [];
+  String(scenario ? scenario.value : '').split(/\r?\n/).forEach(line => {
+    const match = line.trim().match(/^([^:：]{1,40})\s*[:：]\s*(.+)$/);
+    if (match) {
+      const name = match[1].trim();
+      if (name && !names.includes(name)) names.push(name);
+    }
+  });
+  return names;
+}
+
+function detectCharacters() {
+  if (!scenario) return;
+  localStorage.setItem('scenarioText', scenario.value || '');
+  const names = getNames();
+  if (!names.length) {
+    charactersBox.classList.add('hidden');
+    write('Aucun personnage détecté. Format : Nom : dialogue');
+    return;
+  }
+  characters.innerHTML = '';
+  names.forEach(name => {
+    if (!voiceMap[name]) voiceMap[name] = 'homme-naturel';
+    const card = document.createElement('div');
+    card.className = 'character-card';
+    const title = document.createElement('strong');
+    title.textContent = name;
+    const select = document.createElement('select');
+    VOICES.forEach(v => {
+      const option = document.createElement('option');
+      option.value = v[0];
+      option.textContent = v[1];
+      if (voiceMap[name] === v[0]) option.selected = true;
+      select.appendChild(option);
+    });
+    select.addEventListener('change', () => {
+      voiceMap[name] = select.value;
+      localStorage.setItem('voiceMap', JSON.stringify(voiceMap));
+    });
+    card.appendChild(title);
+    card.appendChild(select);
+    characters.appendChild(card);
+  });
+  localStorage.setItem('voiceMap', JSON.stringify(voiceMap));
+  charactersBox.classList.remove('hidden');
+  write(names.length + ' personnage(s) détecté(s). Choisis une voix pour chacun.');
+}
+
 async function testBackend() {
   const url = clean(backend.value);
   if (!url) return write('Ajoute l’URL Render.');
@@ -72,6 +150,7 @@ async function testBackend() {
 
 async function sendVideo() {
   hideResult();
+  if (scenario) localStorage.setItem('scenarioText', scenario.value || '');
 
   const url = clean(backend.value);
   const file = video.files[0];
@@ -79,15 +158,12 @@ async function sendVideo() {
   if (!url) return write('Ajoute l’URL Render.');
   if (!file) return write('Choisis une vidéo.');
 
-  const mb = Math.round(file.size / 1024 / 1024);
-  if (mb > 30) {
-    write('Vidéo lourde : ' + mb + ' Mo. Sur Render gratuit, teste plutôt une vidéo de moins de 30 Mo.');
-  }
-
   const data = new FormData();
   data.append('video', file);
+  data.append('script', scenario ? scenario.value : '');
+  data.append('voiceMap', JSON.stringify(voiceMap));
 
-  write('Upload vers Render en cours. Ne ferme pas la page pendant le traitement.');
+  write('Traitement en cours. Ne ferme pas la page.');
 
   try {
     const response = await fetch(url + '/api/process-video', {
@@ -106,9 +182,11 @@ async function sendVideo() {
     if (!response.ok) throw new Error(json.error || 'Erreur serveur ' + response.status);
 
     const link = url + json.downloadUrl;
-    showResult(link, json);
-    write('MP4 prêt. Utilise le bouton bleu “Télécharger le MP4”.\n\n' + link + '\n\n' + JSON.stringify(json, null, 2));
+    showResult(link, json, url);
+    write('MP4 prêt. Utilise le bouton vert “Télécharger le MP4”.\n\n' + link + '\n\n' + JSON.stringify(json, null, 2));
   } catch (error) {
-    write('Erreur upload ou traitement : ' + error.message + '\n\nRegarde les logs Render juste après l’erreur.');
+    write('Erreur upload ou traitement : ' + error.message);
   }
 }
+
+if (scenario && scenario.value.trim()) detectCharacters();
