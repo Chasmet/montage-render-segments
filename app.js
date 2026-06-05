@@ -87,14 +87,22 @@ function fileInfo() {
   if (mb > 30) write('Attention : sur Render gratuit, le maximum conseillé est 30 Mo.');
 }
 
+function parseDialogueLine(line) {
+  const text = String(line || '').trim();
+  if (!text) return null;
+  const match = text.match(/^(.{1,40}?)\s*[:：∶﹕꞉;\-–—]\s*(.+)$/u);
+  if (!match) return null;
+  const name = match[1].trim();
+  const dialogue = match[2].trim();
+  if (!name || !dialogue) return null;
+  return { name, dialogue };
+}
+
 function getNames() {
   const names = [];
   String(scenario ? scenario.value : '').split(/\r?\n/).forEach(line => {
-    const match = line.trim().match(/^([^:：]{1,40})\s*[:：]\s*(.+)$/);
-    if (match) {
-      const name = match[1].trim();
-      if (name && !names.includes(name)) names.push(name);
-    }
+    const parsed = parseDialogueLine(line);
+    if (parsed && !names.includes(parsed.name)) names.push(parsed.name);
   });
   return names;
 }
@@ -105,7 +113,7 @@ function detectCharacters() {
   const names = getNames();
   if (!names.length) {
     charactersBox.classList.add('hidden');
-    write('Aucun personnage détecté. Format : Nom : dialogue');
+    write('Aucun personnage détecté. Écris par exemple : Yvane : Bonjour');
     return;
   }
   characters.innerHTML = '';
@@ -157,6 +165,11 @@ async function sendVideo() {
 
   if (!url) return write('Ajoute l’URL Render.');
   if (!file) return write('Choisis une vidéo.');
+
+  const names = getNames();
+  if (scenario && scenario.value.trim() && !names.length) {
+    return write('Le scénario n’est pas reconnu. Exemple : Yvane : Bonjour');
+  }
 
   const data = new FormData();
   data.append('video', file);
