@@ -1,10 +1,10 @@
 {
   "name": "montage-render-segments",
-  "version": "1.1.0",
-  "description": "Backend Render léger pour générer un MP4 doublé avec OpenAI et FFmpeg.",
-  "main": "server.js",
+  "version": "1.2.0",
+  "description": "Backend Render léger pour analyser, doubler et exporter une vidéo MP4 avec OpenAI et FFmpeg.",
+  "main": "server-v2.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server-v2.js"
   },
   "engines": {
     "node": ">=20"
