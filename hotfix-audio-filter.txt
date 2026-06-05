@@ -1,0 +1,1 @@
+Replace the MP4 dubbing filter with a connected graph: input 1 is split into two outputs, one for sidechain detection and one for final mix. Do not split input 0 unless both outputs are used.
