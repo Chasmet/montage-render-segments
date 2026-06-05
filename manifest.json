@@ -1,0 +1,20 @@
+{
+  "name": "Studio Doublage IA",
+  "short_name": "Doublage IA",
+  "description": "Application mobile pour analyser une vidéo, générer des voix OpenAI et exporter un MP4 doublé.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "./icon.512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
