@@ -14,7 +14,9 @@ services:
       - key: SEGMENT_DURATION_SECONDS
         value: 10
       - key: MAX_SEGMENTS
-        value: 60
+        value: 18
+      - key: MAX_VIDEO_SECONDS
+        value: 180
       - key: EXPORT_CRF
         value: 18
       - key: EXPORT_PRESET
