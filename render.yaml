@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: montage-render-segments
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: MAX_UPLOAD_MB
+        value: 150
+      - key: SEGMENT_DURATION_SECONDS
+        value: 10
+      - key: MAX_SEGMENTS
+        value: 60
+      - key: EXPORT_CRF
+        value: 18
+      - key: EXPORT_PRESET
+        value: veryfast
+      - key: EXPORT_FPS
+        value: 30
