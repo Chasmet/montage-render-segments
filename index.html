@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Studio Vidéo IA</title>
+  <title>Studio Doublage IA</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="app">
     <section class="box">
-      <h1>Studio Vidéo IA</h1>
-      <p>Envoie une vidéo au moteur Render et récupère directement le MP4 traité.</p>
-      <span class="badge">Mode léger Render</span>
+      <h1>Studio Doublage IA</h1>
+      <p>Ajoute des voix de personnages sur une vidéo et télécharge le MP4 final.</p>
+      <span class="badge">OpenAI voix</span>
       <span class="badge">Max conseillé 30 Mo</span>
       <span class="badge">Export MP4</span>
     </section>
@@ -24,16 +24,34 @@
     </section>
 
     <section class="box">
+      <h2>1. Vidéo</h2>
       <input id="video" type="file" accept="video/mp4,video/*" onchange="fileInfo()">
       <p id="info">Aucune vidéo choisie.</p>
-      <button onclick="sendVideo()">Envoyer la vidéo et créer le MP4</button>
+    </section>
+
+    <section class="box">
+      <h2>2. Scénario</h2>
+      <p>Format obligatoire : <strong>Nom : dialogue</strong></p>
+      <textarea id="script" rows="8" placeholder="Yvane : On doit partir maintenant.&#10;Nelvyn : Attends, j’ai entendu un bruit.&#10;Monstre : Vous n’irez nulle part."></textarea>
+      <button onclick="detectCharacters()">Détecter les personnages</button>
+    </section>
+
+    <section id="charactersBox" class="box hidden">
+      <h2>3. Voix des personnages</h2>
+      <div id="characters"></div>
+    </section>
+
+    <section class="box">
+      <h2>4. Génération</h2>
+      <button onclick="sendVideo()">Générer la vidéo doublée MP4</button>
     </section>
 
     <section id="resultBox" class="box hidden">
       <h2>MP4 prêt</h2>
-      <p id="resultInfo">Ta vidéo traitée est prête.</p>
+      <p id="resultInfo">Ta vidéo doublée est prête.</p>
       <a id="downloadBtn" class="download-btn" href="#" download>Télécharger le MP4</a>
       <a id="openBtn" class="secondary-btn" href="#" target="_blank" rel="noopener">Ouvrir la vidéo</a>
+      <a id="audioBtn" class="secondary-btn hidden" href="#" download>Télécharger l’audio seul</a>
       <video id="preview" class="preview" controls playsinline></video>
     </section>
 
