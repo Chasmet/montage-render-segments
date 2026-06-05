@@ -12,7 +12,7 @@
       <h1>Studio Doublage IA</h1>
       <p>Ajoute des voix de personnages sur une vidéo et télécharge le MP4 final.</p>
       <span class="badge">OpenAI voix</span>
-      <span class="badge">Max conseillé 30 Mo</span>
+      <span class="badge">Analyse timing V2</span>
       <span class="badge">Export MP4</span>
     </section>
 
@@ -27,11 +27,14 @@
       <h2>1. Vidéo</h2>
       <input id="video" type="file" accept="video/mp4,video/*" onchange="fileInfo()">
       <p id="info">Aucune vidéo choisie.</p>
+      <button class="secondary-action" onclick="analyzeVideo()">Analyser la vidéo automatiquement</button>
+      <p class="small">L’analyse remplit le scénario avec les voix parlantes détectées. Les personnages silencieux sont ignorés.</p>
     </section>
 
     <section class="box">
       <h2>2. Scénario</h2>
-      <p>Format obligatoire : <strong>Nom : dialogue</strong></p>
+      <p>Format simple : <strong>Nom : dialogue</strong></p>
+      <p>Format calé : <strong>[00:01.20] Nom : dialogue</strong></p>
       <textarea id="script" rows="8" placeholder="Yvane : On doit partir maintenant.&#10;Nelvyn : Attends, j’ai entendu un bruit.&#10;Monstre : Vous n’irez nulle part."></textarea>
       <button onclick="detectCharacters()">Détecter les personnages</button>
     </section>
