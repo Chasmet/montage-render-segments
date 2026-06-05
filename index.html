@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Montage Render Segments</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #070b14;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+    }
+    .card {
+      width: 100%;
+      max-width: 620px;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.45);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      line-height: 1.1;
+    }
+    .bad {
+      display: inline-block;
+      background: #7f1d1d;
+      color: #fecaca;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    .good {
+      display: inline-block;
+      background: #064e3b;
+      color: #a7f3d0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    p, li { font-size: 17px; line-height: 1.55; color: #dbeafe; }
+    code {
+      background: #020617;
+      color: #bae6fd;
+      padding: 3px 7px;
+      border-radius: 8px;
+    }
+    .steps {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="bad">Ce lien GitHub Pages n'est pas l'application</div>
+    <h1>Montage Render Segments</h1>
+    <p>
+      GitHub Pages ne peut pas lancer Node.js, Express ou FFmpeg. Il affiche seulement une page statique.
+    </p>
+    <p>
+      La vraie application doit être ouverte depuis Render, avec une adresse du type :
+    </p>
+    <p><code>https://montage-render-segments.onrender.com</code></p>
+
+    <div class="steps">
+      <p><strong>À faire dans Render :</strong></p>
+      <ol>
+        <li>New Web Service</li>
+        <li>Connecter le dépôt <code>Chasmet/montage-render-segments</code></li>
+        <li>Build Command : <code>npm install</code></li>
+        <li>Start Command : <code>npm start</code></li>
+        <li>Deploy Web Service</li>
+      </ol>
+    </div>
+
+    <div class="good">Après déploiement Render, tu verras l'upload vidéo et le traitement MP4.</div>
+  </main>
+</body>
+</html>
